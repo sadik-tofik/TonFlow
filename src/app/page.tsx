@@ -10,6 +10,7 @@ import { History } from "@/components/history/History";
 import { SettingsScreen } from "@/components/settings/Settings";
 import { useTelegram } from "@/lib/telegram";
 import { useWallet } from "@/hooks/useWallet";
+import { useTonConnectUI } from '@tonconnect/ui-react'
 import { Zap } from "lucide-react";
 import type { TabId } from "@/types";
 
@@ -20,7 +21,8 @@ export default function App() {
     user: telegramUser,
     hapticFeedback,
   } = useTelegram();
-  const wallet = useWallet();
+  const [tonConnectUI] = useTonConnectUI()
+  const wallet = useWallet(tonConnectUI);
   const isConnected = wallet.connected
   // useWallet no longer needs tonConnectUI passed in
   const [activeTab, setActiveTab] = useState<TabId>("home");
