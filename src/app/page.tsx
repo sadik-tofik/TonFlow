@@ -35,6 +35,7 @@ export default function App() {
   }
 
   async function handleDisconnect() {
+    const { disconnect } = await import('@reown/appkit/react')
     // AppKit exposes disconnect via the modal — easiest is to open the account view
     // which has a native disconnect button, or call the adapter directly.
     // For simplicity we just reset local state; AppKit clears its own session.

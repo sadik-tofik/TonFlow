@@ -23,10 +23,6 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
       await open({ view: 'Connect' })
       // onConnected fires via wallet.connected flip in page.tsx
     } catch (e: any) {
-      await open({ view: 'Connect' })
-      // onConnected fires via wallet.connected flip in page.tsx
-    } catch (e: any) {
->>>>>>> 834913a (fix(page): remove invalid dynamic import of disconnect)
       const msg = String(e?.message ?? e ?? '')
       if (
         !msg.includes('Modal closed') &&
@@ -34,7 +30,6 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
         !msg.includes('user rejected')
       ) {
         setError('Could not open wallet modal. Please try again.')
-      }
       }
     } finally {
       setConnecting(false)
