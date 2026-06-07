@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #080E1C;
+  --bg-card: #0F1A2E;
+  --bg-elevated: #162035;
+  --accent-blue: #1565FF;
+  --accent-blue-hover: #1052CC;
+  --accent-glow: rgba(21, 101, 255, 0.25);
+  --green: #00D897;
+  --red: #FF4D6A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8A9BB5;
+  --text-muted: #4A5568;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --ton-blue: #0098EA;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+
+/* Glass effect */
+.glass {
+  background: rgba(15, 26, 46, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Glow effects */
+.glow-blue { box-shadow: 0 0 20px var(--accent-glow); }
+.glow-green { box-shadow: 0 0 20px rgba(0, 216, 151, 0.2); }
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Pulse dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-dot { animation: pulse-dot 2s infinite; }
+
+/* Fade in up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+
+/* Tab indicator */
+.tab-active-indicator {
+  position: relative;
+}
+.tab-active-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: var(--accent-blue);
+  border-radius: 0 0 3px 3px;
+}
+
+/* Number font */
+.font-num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
