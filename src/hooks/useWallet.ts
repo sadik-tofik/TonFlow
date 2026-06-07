@@ -159,7 +159,7 @@ export interface WalletState {
   tonConnectUI: TonConnectUI | null
 }
 
-export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
+export function useWallet(tonConnectUI?: TonConnectUI | null): WalletState {
   const [address, setAddress] = useState<string | null>(null)
   const [tokens, setTokens] = useState<Token[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -230,6 +230,6 @@ export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
     refreshing,
     error,
     refresh: () => address ? loadData(address, true) : Promise.resolve(),
-    tonConnectUI,
+    tonConnectUI: tonConnectUI ?? null,
   }
 }
