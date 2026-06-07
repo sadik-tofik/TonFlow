@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Settings, ArrowUpDown, ChevronDown, Zap, Star, Info } from 'lucide-react'
+import { ArrowLeft, Settings, ArrowUpDown, ChevronDown, Zap, Star, Info, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Token, TabId } from '@/types'
 import type { WalletState } from '@/hooks/useWallet'
@@ -44,7 +44,7 @@ export function Swap({ onBack, onOpenMira, onTabChange, wallet }: SwapProps) {
 
   function handleSwap() {
     if (!fromAmount || parseFloat(fromAmount) <= 0) return
-    const url = \`https://app.ston.fi/swap?chartVisible=false&ft=\${fromToken.symbol}&tt=\${toToken.symbol}\`
+    const url = `https://app.ston.fi/swap?chartVisible=false&ft=${fromToken.symbol}&tt=${toToken.symbol}`
     window.open(url, '_blank')
   }
 
