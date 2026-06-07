@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { TonConnectProvider } from '@/lib/tonconnect'
 import { TelegramProvider } from '@/lib/telegram'
+import Script from 'next/script'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,8 +19,30 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Anti-Analytics Interceptor: Blocks red network errors in console */}
+        <Script
+          id="analytics-blocker"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const b = (u) => typeof u === 'string' && u.includes('analytics.ton.org');
+                const f = window.fetch;
+                window.fetch = function() {
+                  if (b(arguments[0])) return Promise.resolve(new Response(null, { status: 200 }));
+                  return f.apply(this, arguments);
+                };
+                const s = window.navigator.sendBeacon;
+                window.navigator.sendBeacon = function() {
+                  if (b(arguments[0])) return true;
+                  return s.apply(this, arguments);
+                };
+              })();
+            `,
+          }}
+        />
         <script src="https://telegram.org/js/telegram-web-app.js" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

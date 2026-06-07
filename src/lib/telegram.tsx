@@ -43,23 +43,34 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   const [themeParams, setThemeParams] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    const tg = (window as any).Telegram?.WebApp
+    // Set ready after a tiny delay to allow the script to execute, 
+    // but ALWAYS set it so the app doesn't hang.
+    const timer = setTimeout(() => setIsReady(true), 100)
 
+    const tg = (window as any).Telegram?.WebApp
     if (tg) {
       tg.ready()
       tg.expand()
-      tg.enableClosingConfirmation()
+      
+      if (tg.isVersionAtLeast('6.2')) {
+        tg.enableClosingConfirmation()
+      }
 
-      // Set color scheme to match our dark theme
-      tg.setHeaderColor('#080E1C')
-      tg.setBackgroundColor('#080E1C')
+      if (tg.isVersionAtLeast('6.1')) {
+        tg.setHeaderColor('#080E1C')
+        tg.setBackgroundColor('#080E1C')
+      }
+
+      if (tg.isVersionAtLeast('7.0')) {
+        tg.setBottomBarColor('#080E1C')
+      }
 
       setIsTelegram(true)
       setUser(tg.initDataUnsafe?.user || null)
       setThemeParams(tg.themeParams || {})
     }
 
-    setIsReady(true)
+    return () => clearTimeout(timer)
   }, [])
 
   const value: TelegramContext = {
@@ -71,7 +82,10 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     close: () => (window as any).Telegram?.WebApp?.close(),
     showAlert: (msg) => (window as any).Telegram?.WebApp?.showAlert(msg),
     hapticFeedback: (type = 'medium') => {
-      (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred(type)
+      const tg = (window as any).Telegram?.WebApp
+      if (tg?.isVersionAtLeast('6.1')) {
+        tg.HapticFeedback?.impactOccurred(type)
+      }
     },
   }
 

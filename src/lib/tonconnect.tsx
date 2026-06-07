@@ -1,14 +1,52 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { TonConnectUIProvider } from '@tonconnect/ui-react'
 
-const MANIFEST_URL =
-  process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL ||
-  'https://tonflow.vercel.app/tonconnect-manifest.json'
-
 export function TonConnectProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const [manifestUrl, setManifestUrl] = useState('')
+
+  useEffect(() => {
+    setMounted(true)
+    // Prefer an explicit public manifest URL (useful when developing on a LAN or tunneling)
+    const envManifest = (process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL || '').trim()
+    if (envManifest) {
+      setManifestUrl(envManifest)
+    } else {
+      setManifestUrl(`${window.location.origin}/api/tonconnect-manifest`)
+    }
+
+    // Silence TonConnect analytics noise (from TonCoach setup)
+    const orig = console.error.bind(console)
+    console.error = (...args: unknown[]) => {
+      const s = String(args[0] ?? '')
+      if (
+        s.includes('TON_CONNECT') ||
+        s.includes('TonConnectError') ||
+        s.includes('analytics')
+      ) return
+      orig(...args)
+    }
+    return () => {
+      console.error = orig
+    }
+  }, [])
+
+  if (!mounted || !manifestUrl) {
+    return (
+      <div className="min-h-screen bg-[#080E1C] flex items-center justify-center">
+        <div className="flex gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:300ms]" />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <TonConnectUIProvider manifestUrl={MANIFEST_URL}>
+    <TonConnectUIProvider manifestUrl={manifestUrl}>
       {children}
     </TonConnectUIProvider>
   )
