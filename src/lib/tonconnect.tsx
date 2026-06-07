@@ -1,40 +1,49 @@
 'use client'
 
-import { ReactNode } from 'react'
-import { createAppKit } from '@reown/appkit/react'
-import { TonAdapter } from '@reown/appkit-adapter-ton'
-import { ton } from '@reown/appkit/networks'
+import { useState, useEffect } from 'react'
+import { TonConnectUIProvider } from '@tonconnect/ui-react'
 
-const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID!
+export function TonConnectProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const [manifestUrl, setManifestUrl] = useState('')
 
-if (!projectId) {
-  throw new Error('Missing NEXT_PUBLIC_REOWN_PROJECT_ID in environment')
-}
+  useEffect(() => {
+    setMounted(true)
+    const envManifest = (process.env.NEXT_PUBLIC_TONCONNECT_MANIFEST_URL || '').trim()
+    if (envManifest) {
+      setManifestUrl(envManifest)
+    } else {
+      setManifestUrl(`${window.location.origin}/api/tonconnect-manifest`)
+    }
 
-const tonAdapter = new TonAdapter({ projectId })
+    const orig = console.error.bind(console)
+    console.error = (...args: unknown[]) => {
+      const s = String(args[0] ?? '')
+      if (
+        s.includes('TON_CONNECT') ||
+        s.includes('TonConnectError') ||
+        s.includes('analytics')
+      ) return
+      orig(...args)
+    }
+    return () => { console.error = orig }
+  }, [])
 
-createAppKit({
-  adapters: [tonAdapter],
-  projectId,
-  networks: [ton],
-  defaultNetwork: ton,
-  metadata: {
-    name: 'TonFlow',
-    description: 'Cross-chain swaps · AI advisor · Live portfolio',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://ton-flow-silk.vercel.app',
-    icons: ['https://ton.org/download/ton_symbol.png'],
-  },
-  features: {
-    analytics: false,
-    // Disable email/social logins — TON wallet only
-    email: false,
-    socials: [],
-  },
-  themeMode: 'dark',
-})
+  if (!mounted || !manifestUrl) {
+    return (
+      <div className="min-h-screen bg-[#080E1C] flex items-center justify-center">
+        <div className="flex gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 rounded-full bg-[#1565FF] animate-bounce [animation-delay:300ms]" />
+        </div>
+      </div>
+    )
+  }
 
-// No provider wrapper needed — createAppKit() registers everything globally.
-// We still export a thin wrapper so layout.tsx doesn't need changes.
-export function TonConnectProvider({ children }: { children: ReactNode }) {
-  return <>{children}</>
+  return (
+    <TonConnectUIProvider manifestUrl={manifestUrl}>
+      {children}
+    </TonConnectUIProvider>
+  )
 }
