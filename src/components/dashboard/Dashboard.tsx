@@ -214,9 +214,14 @@ export function Dashboard({ onTabChange, wallet, telegramUser }: DashboardProps)
                   <p className="text-3xl font-black text-[#00D897]" style={{ fontFamily: 'var(--font-display)' }}>{pool.apy}%</p>
                   <p className="text-[10px] text-[#5A6B82] mt-0.5">APY · TVL {pool.tvl}</p>
                 </div>
-                <button className="w-full py-2 rounded-xl bg-[#1565FF] text-white text-xs font-bold hover:bg-[#1052CC] transition-colors active:scale-95">
-                  Add Liquidity
-                </button>
+                <a
+                  href="https://app.ston.fi/pools"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2 rounded-xl bg-[#1565FF] text-white text-xs font-bold hover:bg-[#1052CC] transition-colors active:scale-95 flex items-center justify-center gap-1"
+                >
+                  View on STON.fi ↗
+                </a>
               </div>
             ))}
           </div>

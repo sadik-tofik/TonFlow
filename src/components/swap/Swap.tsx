@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Settings, ArrowUpDown, ChevronDown, Check, Zap, Star, Info } from 'lucide-react'
+import { ArrowLeft, Settings, ArrowUpDown, ChevronDown, Zap, Star, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Token, TabId } from '@/types'
 import type { WalletState } from '@/hooks/useWallet'
@@ -30,8 +30,6 @@ export function Swap({ onBack, onOpenMira, onTabChange, wallet }: SwapProps) {
   const [showFromPicker, setShowFromPicker] = useState(false)
   const [showToPicker, setShowToPicker] = useState(false)
   const [slippageOpen, setSlippageOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
   const rate = fromToken.symbol === 'TON' ? 5.84 : fromToken.symbol === 'USDT' ? 0.171 : 1
   const toAmount = fromAmount ? (parseFloat(fromAmount) * rate).toFixed(4) : ''
@@ -44,33 +42,13 @@ export function Swap({ onBack, onOpenMira, onTabChange, wallet }: SwapProps) {
     setFromAmount(toAmount)
   }
 
-  async function handleSwap() {
+  function handleSwap() {
     if (!fromAmount || parseFloat(fromAmount) <= 0) return
-    setLoading(true)
-    await new Promise(r => setTimeout(r, 2200))
-    setLoading(false)
-    setSuccess(true)
-    setTimeout(() => { setFromAmount(''); setSuccess(false) }, 4000)
+    const url = \`https://app.ston.fi/swap?chartVisible=false&ft=\${fromToken.symbol}&tt=\${toToken.symbol}\`
+    window.open(url, '_blank')
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 gap-6 bg-[#080E1C] relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 40%, rgba(0,216,151,0.08) 0%, transparent 60%)' }} />
-        <div className="w-24 h-24 rounded-full flex items-center justify-center relative" style={{ background: 'rgba(0,216,151,0.1)', border: '2px solid #00D897', boxShadow: '0 0 40px rgba(0,216,151,0.2)' }}>
-          <Check size={44} className="text-[#00D897]" strokeWidth={2.5} />
-        </div>
-        <div className="text-center">
-          <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>Swap Complete!</h2>
-          <p className="text-[#5A6B82]">{fromAmount} {fromToken.symbol} → {toAmount} {toToken.symbol}</p>
-          <p className="text-xs text-[#3A4B5C] mt-2 font-mono">via Omniston · {process.env.NEXT_PUBLIC_TON_NETWORK}</p>
-        </div>
-        <button onClick={() => setSuccess(false)} className="px-6 py-3 rounded-2xl border border-[#1565FF]/40 text-[#1565FF] font-semibold hover:bg-[#1565FF]/10 transition-colors">
-          Swap Again
-        </button>
-      </div>
-    )
-  }
+
 
   function TokenPicker({ current, onSelect, onClose }: { current: Token; onSelect: (t: Token) => void; onClose: () => void }) {
     return (
@@ -196,18 +174,14 @@ export function Swap({ onBack, onOpenMira, onTabChange, wallet }: SwapProps) {
           <div className="px-5 pb-5">
             <button
               onClick={handleSwap}
-              disabled={!fromAmount || parseFloat(fromAmount) <= 0 || loading}
+              disabled={!fromAmount || parseFloat(fromAmount) <= 0}
               className="w-full h-14 rounded-2xl text-white font-black text-base flex items-center justify-center gap-2 relative overflow-hidden transition-all active:scale-[0.98] disabled:opacity-40"
               style={{ background: 'linear-gradient(135deg,#1565FF,#0098EA)', boxShadow: '0 8px 24px rgba(21,101,255,0.35)' }}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Zap size={18} className="fill-white" />
-                  Swap Now
-                </>
-              )}
+              <>
+                <Zap size={18} className="fill-white" />
+                Swap on STON.fi ↗
+              </>
             </button>
             <p className="text-center text-[11px] text-[#3A4B5C] mt-2">Powered by <span className="text-[#5A6B82]">STON.fi Omniston</span></p>
           </div>
