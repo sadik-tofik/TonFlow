@@ -1,5 +1,5 @@
 {
-  "url": "http://10.141.110.33:3000",
+  "url": "https://your-domain.example",
   "name": "TonFlow",
-  "iconUrl": "http://10.141.110.33:3000/favicon.ico"
+  "iconUrl": "https://your-domain.example/favicon.ico"
 }
