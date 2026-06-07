@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAppKit } from '@reown/appkit/react'
+import { useTonConnectUI } from '@tonconnect/ui-react'
 import { Zap, ArrowRight, Loader2 } from 'lucide-react'
 
 interface TelegramUser { id: number; first_name: string; username?: string }
@@ -11,7 +11,7 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
-  const { open } = useAppKit()
+  const [tonConnectUI] = useTonConnectUI()
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,7 +20,8 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
     setError(null)
     setConnecting(true)
     try {
-      await open({ view: 'Connect' })
+      if (!tonConnectUI) throw new Error('No TonConnect UI available')
+      await tonConnectUI.openModal()
       // onConnected fires via wallet.connected flip in page.tsx
     } catch (e: any) {
       const msg = String(e?.message ?? e ?? '')
@@ -29,7 +30,7 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
         !msg.includes('User rejects') &&
         !msg.includes('user rejected')
       ) {
-        setError('Could not open wallet modal. Please try again.')
+        setError('Could not open wallet. Make sure Tonkeeper is installed.')
       }
     } finally {
       setConnecting(false)

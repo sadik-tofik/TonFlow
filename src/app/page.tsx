@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { TabBar } from "@/components/layout/TabBar";
 import { Onboarding } from "@/components/dashboard/Onboarding";
 import { Dashboard } from "@/components/dashboard/Dashboard";
@@ -21,10 +20,9 @@ export default function App() {
     user: telegramUser,
     hapticFeedback,
   } = useTelegram();
-  const { open } = useAppKit();
-  const { isConnected } = useAppKitAccount();
-  // useWallet no longer needs tonConnectUI passed in
   const wallet = useWallet();
+  const isConnected = wallet.connected
+  // useWallet no longer needs tonConnectUI passed in
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [miraPrefill, setMiraPrefill] = useState<string | undefined>();
 
@@ -40,11 +38,14 @@ export default function App() {
   }
 
   async function handleDisconnect() {
-    // AppKit exposes disconnect via the modal — easiest is to open the account view
-    // which has a native disconnect button, or call the adapter directly.
-    // For simplicity we just reset local state; AppKit clears its own session.
-    open({ view: "Account" });
-    setActiveTab("home");
+    try {
+      if (wallet?.tonConnectUI && (wallet.tonConnectUI as any).disconnect) {
+        await (wallet.tonConnectUI as any).disconnect()
+      }
+    } catch (e) {
+      // ignore
+    }
+    setActiveTab("home")
   }
 
   // Loading splash
