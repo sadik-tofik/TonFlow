@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useTonConnectUI } from '@tonconnect/ui-react'
+import { useAppKit } from '@reown/appkit/react'
 import { Zap, ArrowRight, Loader2 } from 'lucide-react'
 
 interface TelegramUser { id: number; first_name: string; username?: string }
@@ -11,7 +11,7 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
-  const [tonConnectUI] = useTonConnectUI()
+  const { open } = useAppKit()
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,17 +20,21 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
     setError(null)
     setConnecting(true)
     try {
-      await tonConnectUI.openModal()
-      // onConnected fires via wallet.connected flip in parent (page.tsx)
+      await open({ view: 'Connect' })
+      // onConnected fires via wallet.connected flip in page.tsx
     } catch (e: any) {
-      // User closed the modal — not a real error, just reset state
+      await open({ view: 'Connect' })
+      // onConnected fires via wallet.connected flip in page.tsx
+    } catch (e: any) {
+>>>>>>> 834913a (fix(page): remove invalid dynamic import of disconnect)
       const msg = String(e?.message ?? e ?? '')
       if (
         !msg.includes('Modal closed') &&
         !msg.includes('User rejects') &&
         !msg.includes('user rejected')
       ) {
-        setError('Could not open wallet. Make sure Tonkeeper is installed.')
+        setError('Could not open wallet modal. Please try again.')
+      }
       }
     } finally {
       setConnecting(false)
@@ -48,7 +52,6 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10 gap-8">
-
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
@@ -122,7 +125,7 @@ export function Onboarding({ onConnected, telegramUser }: OnboardingProps) {
           {connecting ? (
             <>
               <Loader2 size={20} className="animate-spin" />
-              Connecting…
+              Opening wallet…
             </>
           ) : (
             <>

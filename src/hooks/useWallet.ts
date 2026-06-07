@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { TonConnectUI, CHAIN } from '@tonconnect/ui-react'
+import { useAppKitAccount, useAppKit } from '@reown/appkit/react'
 import type { Token, Transaction } from '@/types'
 
 // Token metadata map (address → info)
@@ -12,16 +12,9 @@ const TOKEN_META: Record<string, { symbol: string; name: string; logo: string; c
   'EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT': { symbol: 'NOT', name: 'Notcoin', logo: '🪙', color: '#F59E0B', decimals: 9 },
 }
 
-// Testnet token addresses
-const TESTNET_TOKENS: Record<string, { symbol: string; name: string; logo: string; color: string; decimals: number }> = {
-  native: { symbol: 'TON', name: 'Toncoin', logo: '💎', color: '#0098EA', decimals: 9 },
-  'kQBqSpvo4S87mkftrl-TBeKCCMnLGIDmMh-RkL4UYMKB-Pek': { symbol: 'USDT', name: 'Tether USD', logo: '💵', color: '#26A17B', decimals: 6 },
-}
-
-const TONAPI_BASE = process.env.NEXT_PUBLIC_TONAPI_URL || 'https://testnet.tonapi.io/v2'
+const TONAPI_BASE = process.env.NEXT_PUBLIC_TONAPI_URL || 'https://tonapi.io/v2'
 const COINGECKO_BASE = 'https://api.coingecko.com/api/v3'
 
-// Prices cache
 let priceCache: Record<string, number> = {}
 let priceCacheTime = 0
 
@@ -40,9 +33,6 @@ async function fetchTONPrice(): Promise<number> {
 }
 
 async function fetchBalances(address: string): Promise<{ tokens: Token[]; totalUsd: number }> {
-  const isTestnet = process.env.NEXT_PUBLIC_TON_NETWORK === 'testnet'
-  const metaMap = isTestnet ? TESTNET_TOKENS : TOKEN_META
-
   try {
     const [accountRes, jettonsRes, tonPrice] = await Promise.all([
       fetch(`${TONAPI_BASE}/accounts/${address}`),
@@ -71,7 +61,7 @@ async function fetchBalances(address: string): Promise<{ tokens: Token[]; totalU
     if (jettonsData.balances) {
       for (const j of jettonsData.balances) {
         const addr = j.jetton?.address || ''
-        const meta = metaMap[addr]
+        const meta = TOKEN_META[addr]
         const decimals = j.jetton?.decimals || meta?.decimals || 9
         const balance = Number(j.balance || 0) / Math.pow(10, decimals)
         if (balance < 0.001) continue
@@ -169,11 +159,14 @@ export interface WalletState {
   refreshing: boolean
   error: string | null
   refresh: () => Promise<void>
-  tonConnectUI: TonConnectUI | null
+  // kept for API compatibility with components that pass it around
+  tonConnectUI: null
 }
 
-export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
-  const [address, setAddress] = useState<string | null>(null)
+export function useWallet(): WalletState {
+  // AppKit gives us address + connection status directly — no TonConnectUI needed
+  const { address, isConnected } = useAppKitAccount()
+
   const [tokens, setTokens] = useState<Token[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [totalUsd, setTotalUsd] = useState(0)
@@ -193,7 +186,7 @@ export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
       setTokens(balData.tokens)
       setTotalUsd(balData.totalUsd)
       setTransactions(txData)
-    } catch (e) {
+    } catch {
       setError('Failed to load wallet data')
     } finally {
       setLoading(false)
@@ -202,27 +195,14 @@ export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
   }, [])
 
   useEffect(() => {
-    if (!tonConnectUI) return
-    const unsub = tonConnectUI.onStatusChange((wallet) => {
-      if (wallet) {
-        const raw = wallet.account.address
-        setAddress(raw)
-        loadData(raw)
-      } else {
-        setAddress(null)
-        setTokens([])
-        setTransactions([])
-        setTotalUsd(0)
-      }
-    })
-    // Check existing connection
-    if (tonConnectUI.account) {
-      const raw = tonConnectUI.account.address
-      setAddress(raw)
-      loadData(raw)
+    if (isConnected && address) {
+      loadData(address)
+    } else {
+      setTokens([])
+      setTransactions([])
+      setTotalUsd(0)
     }
-    return unsub
-  }, [tonConnectUI, loadData])
+  }, [isConnected, address, loadData])
 
   const shortAddress = address
     ? `${address.slice(0, 4)}...${address.slice(-4)}`
@@ -232,8 +212,8 @@ export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
   const change24hPct = totalUsd > 0 ? (change24hUsd / totalUsd) * 100 : 0
 
   return {
-    connected: !!address,
-    address,
+    connected: isConnected,
+    address: address ?? null,
     shortAddress,
     tokens,
     transactions,
@@ -244,6 +224,6 @@ export function useWallet(tonConnectUI: TonConnectUI | null): WalletState {
     refreshing,
     error,
     refresh: () => address ? loadData(address, true) : Promise.resolve(),
-    tonConnectUI,
+    tonConnectUI: null,
   }
 }

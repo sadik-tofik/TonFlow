@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@reown/appkit": "^1.8.20",
+    "@reown/appkit-adapter-ton": "^1.8.20",
     "@ston-fi/omniston-sdk-react": "^0.8.3",
     "@telegram-apps/sdk": "^3.11.8",
     "@telegram-apps/sdk-react": "^3.3.9",
